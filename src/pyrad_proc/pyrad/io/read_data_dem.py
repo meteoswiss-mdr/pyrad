@@ -148,8 +148,7 @@ def read_dem(fname, field_name = 'terrain_altitude', fill_value=None,
         metadata, rasterarray = read_idrisi_data(fname, fill_value)
     else:
         warn('Unable to read file %s, extension must be .tif .tiff .gtif, '+
-             '.asc .dem .txt .rst',
-             fname)
+             '.asc .dem .txt .rst'.format(fname))
         return None
 
     field_dict = get_metadata(field_name)

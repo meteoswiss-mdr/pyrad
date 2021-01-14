@@ -19,12 +19,15 @@ References
 To run the processing framework type:
     python main_process_data.py \
 [config_file] --starttime [process_start_time] --endtime [process_end_time] \
---cfgpath [cfgpath]
+--cfgpath [cfgpath] --gatherplots
 
-If startime and endtime are not specified the program determines them from
-the trajectory file or the last processed volume.
 cfgpath is an optional argument with default: \
 '$HOME/pyrad/config/processing/'
+
+if gatherplots is set to 1, all generated figures will be copied into a
+new directory called "ALL_FIGURES" located in the output folder. This is
+convenient since GECSX can generate many figures and they are placed by Pyrad
+in separate folders.
 
 There are two ways to use this program:
     1. By providing it with a set of valid radar scans, in this case the
@@ -44,14 +47,23 @@ There are two ways to use this program:
      antenna_elevations FLTARR 2 # deg
             0.7
             3.0
+    as well as the following entries in the loc file (again choose any value)
+    RadarPosition STRUCT 3
+        latitude FLOAT 46.842473
+        longitude FLOAT 6.918370
+        altitude FLOAT 449.5
+
 See the two examples pay_main_DX50.txt and pay_main_norad.txt in
 $HOME/pyrad/config/gecsx/
 
 Example:
     python main_process_gecsx.py pay_main_norad.txt
---cfgpath $HOME/pyrad/config/gecsx/
+--cfgpath $HOME/pyrad/config/gecsx/ --gatherplots 1
+
     python main_process_gecsx.py pay_main_DX50.txt --starttime \
 '20160101000000' --endtime '20170101001000' --cfgpath $HOME/pyrad/config/gecsx/
+--gatherplots 1
+
 """
 
 # Author: fvj
@@ -96,10 +108,12 @@ def main():
                         "processing (e.g. 'RUN57'). This string is added "
                         "to the filenames of the product files.",
                         default="")
-    parser.add_argument("-t", "--trajfile", type=str, default='',
-                        help="Definition file of plane trajectory. "
-                        "Configuration of scan sector, products, ...")
-
+    parser.add_argument("-g", "--gatherplots", type=int,
+                        help="If set to 1 will create a folder called ALL_FIGURES "
+                        "in the output folder as defined by saveimgbasepath "
+                        "in the main config file, and will copy all generated "
+                        "figures in this folder (for convenience)",
+                        default=1)
     args = parser.parse_args()
 
     print("====== PYRAD data processing started: %s" %
@@ -126,15 +140,14 @@ def main():
     if args.endtime is not None:
         proc_endtime = datetime.datetime.strptime(args.endtime, '%Y%m%d%H%M%S')
     cfgfile_proc = args.cfgpath+args.proc_cfgfile
-
+    gatherplots = args.gatherplots
     if args.infostr == 'None':
         infostr = ''
     else:
         infostr = args.infostr
 
     main_gecsx(cfgfile_proc, starttime=proc_starttime, endtime=proc_endtime,
-               infostr=infostr)
-
+               infostr=infostr, gather_plots=gatherplots)
 
 def _print_end_msg(text):
     """

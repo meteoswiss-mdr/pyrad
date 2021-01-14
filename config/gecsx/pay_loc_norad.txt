@@ -9,8 +9,7 @@ RadarName STRARR 1
 	DX50
 
 # Names of the radar scans in the specified sector
-ScanList STRARR 1
-	  MALS_SIO_RHI.ele/  # masterscan: first scan of a volume
+ScanList STRING MALS_SIO_RHI.ele/  # masterscan: first scan of a volume
 	  
 ####
 # GECSX mandatory parameters
@@ -36,9 +35,9 @@ RadarPosition STRUCT 3
 # The following parameters are optional for GECSX
 # Defaults are attg = 0.012, AzimTol = 0, mosotti_factor = 0.9644, refcorr = 1.3333
 ####
-attg FLOAT 0.012 # gas attenuation coefficient (1-way attenuation)
-AzimTol FLOAT 0. # azimuth convolution window for moving antenna
-mosotti_factor FLOAT 0.9644 # Clausius-Mosotti factor K
+attg FLOAT 0.012 # [db/km] gas attenuation coefficient (1-way attenuation)
+AzimTol FLOAT 0. # [deg] azimuth convolution window for moving antenna 
+mosotti_factor FLOAT 0.9644 # [deg] Clausius-Mosotti factor K
 refcorr FLOAT 1.33333 # Effect of atm refraction to the earth bending radius
 ####
 

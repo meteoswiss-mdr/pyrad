@@ -11,7 +11,7 @@ functions to control the Pyrad data processing flow
     main_rt
     main_cosmo
     main_cosmo_rt
-
+    main_gecsx
 """
 from __future__ import print_function
 import warnings
@@ -21,8 +21,10 @@ import os
 from datetime import datetime
 from datetime import timedelta
 import gc
+import subprocess
 import queue
 import time
+from pathlib import Path
 
 from pyart import version as pyart_version
 from pyrad import version as pyrad_version
@@ -831,7 +833,8 @@ def main_cosmo_rt(cfgfile_list, starttime=None, endtime=None, infostr_list=None,
 
 
 
-def main_gecsx(cfgfile, starttime=None, endtime=None, infostr=""):
+def main_gecsx(cfgfile, starttime=None, endtime=None, infostr="",
+               gather_plots = True):
     """
     Main flow control. Processes radar data off-line over a period of time
     given either by the user, a trajectory file, or determined by the last
@@ -960,5 +963,16 @@ def main_gecsx(cfgfile, starttime=None, endtime=None, infostr=""):
         infostr=infostr)
 
     gc.collect()
+
+    if gather_plots:
+        img_ext = cfg['imgformat']
+        for dset in dscfg:
+            gather_dir = str(Path(cfg['saveimgbasepath'], cfg['name'], dset))
+            print('Copying all generated figures into dir {:s}...'.format(
+                gather_dir))
+            for ex in img_ext:
+                cmd = ('cd {:s}; mkdir -p ALL_FIGURES; find . -type f -name "*.{:s}" '.format(gather_dir,
+                                   ex) + '-exec cp {} ALL_FIGURES \\;')
+                subprocess.call(cmd, shell = True)
 
     print('- This is the end my friend! See you soon!')
