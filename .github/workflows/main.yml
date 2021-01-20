@@ -33,4 +33,4 @@ jobs:
           # The root LaTeX file to be compiled
           root_file: DataProcessing.tex
           # The working directory for the latex compiler to be invoked
-          working_directory: ${{github.workspace}}/doc/pyrad-framework-cookbook/
+          working_directory: ./doc/pyrad-framework-cookbook/
