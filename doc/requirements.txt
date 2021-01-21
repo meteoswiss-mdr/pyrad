@@ -5,4 +5,4 @@ matplotlib
 netCDF4
 numpydoc
 cython
-../src/pyrad_proc
+./src/pyrad_proc
