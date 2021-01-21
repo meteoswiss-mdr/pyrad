@@ -6,5 +6,5 @@ netCDF4
 numpydoc
 cython
 ./src/pyrad_proc/
-./src/pyart
+./src/pyart/
 
