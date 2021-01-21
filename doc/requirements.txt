@@ -1,0 +1,8 @@
+numpy
+pyproj
+scipy
+matplotlib
+netCDF4
+numpydoc
+cython
+../src/pyrad_proc
