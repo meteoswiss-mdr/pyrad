@@ -1,0 +1,344 @@
+# PRODUCT CONFIG FILE
+# Example of plotting NEXRAD level II data
+
+# List of datasets to generate.
+# The detailed specification of each dataset is given below.
+dataSetList STRARR 10
+    l0:dBuZ
+    l0:dBZ    
+    l0:ZDR
+    l0:RhoHV
+    l0:PhiDP
+    l0:KDP
+    l0:PIA
+    l0:hydro
+    l0:V
+    l1:SAVEVOL
+
+
+# ============================================================================
+#               Raw data
+# ============================================================================
+dBuZ STRUCT 3
+    type STRING RAW
+    datatype STRING ODIM:dBuZ,D{%Y%m%d????00}-F{%Y%m%d%H%M00}
+    products STRUCT 7
+        PPI_EL00 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING dBuZ
+            anglenr INT 0
+		PPI_EL01 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING dBuZ
+            anglenr INT 1
+		PPI_EL02 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING dBuZ
+            anglenr INT 2
+		PPI_EL03 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING dBuZ
+            anglenr INT 3
+		PPI_EL04 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING dBuZ
+            anglenr INT 4
+		PPI_EL05 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING dBuZ
+            anglenr INT 5
+        RHI STRUCT 4
+            type STRING PSEUDORHI_IMAGE
+            voltype STRING dBuZ
+            angle FLOAT 90.
+            AziTol FLOAT 0.5
+            
+dBZ STRUCT 3
+    type STRING RAW
+    datatype STRING ODIM:dBZ,D{%Y%m%d????00}-F{%Y%m%d%H%M00}
+    products STRUCT 7
+        PPI_EL00 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING dBZ
+            anglenr INT 0
+		PPI_EL01 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING dBZ
+            anglenr INT 1
+		PPI_EL02 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING dBZ
+            anglenr INT 2
+		PPI_EL03 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING dBZ
+            anglenr INT 3
+		PPI_EL04 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING dBZ
+            anglenr INT 4
+		PPI_EL05 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING dBZ
+            anglenr INT 5
+        RHI STRUCT 4
+            type STRING PSEUDORHI_IMAGE
+            voltype STRING dBZ
+            angle FLOAT 90.
+            AziTol FLOAT 0.5
+
+
+ZDR STRUCT 3
+    type STRING RAW
+    datatype STRING ODIM:ZDR,D{%Y%m%d????00}-F{%Y%m%d%H%M00}
+    products STRUCT 7
+        PPI_EL00 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING ZDR
+            anglenr INT 0
+		PPI_EL01 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING ZDR
+            anglenr INT 1
+		PPI_EL02 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING ZDR
+            anglenr INT 2
+		PPI_EL03 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING ZDR
+            anglenr INT 3
+		PPI_EL04 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING ZDR
+            anglenr INT 4
+		PPI_EL05 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING ZDR
+            anglenr INT 5
+        RHI STRUCT 4
+            type STRING PSEUDORHI_IMAGE
+            voltype STRING ZDR
+            angle FLOAT 90.
+            AziTol FLOAT 0.5
+
+RhoHV STRUCT 3
+    type STRING RAW
+    datatype STRING ODIM:RhoHV,D{%Y%m%d????00}-F{%Y%m%d%H%M00}
+    products STRUCT 7
+        PPI_EL00 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING RhoHV
+            anglenr INT 0
+		PPI_EL01 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING RhoHV
+            anglenr INT 1
+		PPI_EL02 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING RhoHV
+            anglenr INT 2
+		PPI_EL03 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING RhoHV
+            anglenr INT 3
+		PPI_EL04 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING RhoHV
+            anglenr INT 4
+		PPI_EL05 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING RhoHV
+            anglenr INT 5
+        RHI STRUCT 4
+            type STRING PSEUDORHI_IMAGE
+            voltype STRING RhoHV
+            angle FLOAT 90.
+            AziTol FLOAT 0.5
+
+PhiDP STRUCT 3
+    type STRING RAW
+    datatype STRING ODIM:PhiDP,D{%Y%m%d????00}-F{%Y%m%d%H%M00}
+    products STRUCT 7
+        PPI_EL00 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING PhiDP
+            anglenr INT 0
+		PPI_EL01 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING PhiDP
+            anglenr INT 1
+		PPI_EL02 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING PhiDP
+            anglenr INT 2
+		PPI_EL03 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING PhiDP
+            anglenr INT 3
+		PPI_EL04 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING PhiDP
+            anglenr INT 4
+		PPI_EL05 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING PhiDP
+            anglenr INT 5
+        RHI STRUCT 4
+            type STRING PSEUDORHI_IMAGE
+            voltype STRING PhiDP
+            angle FLOAT 90.
+            AziTol FLOAT 0.5
+
+KDP STRUCT 3
+    type STRING RAW
+    datatype STRING ODIM:KDP,D{%Y%m%d????00}-F{%Y%m%d%H%M00}
+    products STRUCT 7
+        PPI_EL00 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING KDP
+            anglenr INT 0
+		PPI_EL01 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING KDP
+            anglenr INT 1
+		PPI_EL02 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING KDP
+            anglenr INT 2
+		PPI_EL03 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING KDP
+            anglenr INT 3
+		PPI_EL04 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING KDP
+            anglenr INT 4
+		PPI_EL05 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING KDP
+            anglenr INT 5
+        RHI STRUCT 4
+            type STRING PSEUDORHI_IMAGE
+            voltype STRING KDP
+            angle FLOAT 90.
+            AziTol FLOAT 0.5
+
+PIA STRUCT 3
+    type STRING RAW
+    datatype STRING ODIM:PIA,D{%Y%m%d????00}-F{%Y%m%d%H%M00}
+    products STRUCT 7
+        PPI_EL00 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING PIA
+            anglenr INT 0
+		PPI_EL01 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING PIA
+            anglenr INT 1
+		PPI_EL02 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING PIA
+            anglenr INT 2
+		PPI_EL03 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING PIA
+            anglenr INT 3
+		PPI_EL04 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING PIA
+            anglenr INT 4
+		PPI_EL05 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING PIA
+            anglenr INT 5
+        RHI STRUCT 4
+            type STRING PSEUDORHI_IMAGE
+            voltype STRING PIA
+            angle FLOAT 90.
+            AziTol FLOAT 0.5 
+            
+hydro STRUCT 3
+    type STRING RAW
+    datatype STRING ODIM:hydro,D{%Y%m%d????00}-F{%Y%m%d%H%M00}
+    products STRUCT 7
+        PPI_EL00 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING hydro
+            anglenr INT 0
+		PPI_EL01 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING hydro
+            anglenr INT 1
+		PPI_EL02 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING hydro
+            anglenr INT 2
+		PPI_EL03 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING hydro
+            anglenr INT 3
+		PPI_EL04 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING hydro
+            anglenr INT 4
+		PPI_EL05 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING hydro
+            anglenr INT 5
+        RHI STRUCT 4
+            type STRING PSEUDORHI_IMAGE
+            voltype STRING hydro
+            angle FLOAT 90.
+            AziTol FLOAT 0.5
+                                   
+V STRUCT 3
+    type STRING RAW
+    datatype STRING ODIM:V,D{%Y%m%d????00}-F{%Y%m%d%H%M00}
+    products STRUCT 7
+        PPI_EL00 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING V
+            anglenr INT 0
+		PPI_EL01 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING V
+            anglenr INT 1
+		PPI_EL02 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING V
+            anglenr INT 2
+		PPI_EL03 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING V
+            anglenr INT 3
+		PPI_EL04 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING V
+            anglenr INT 4
+		PPI_EL05 STRUCT 3
+            type STRING PPI_IMAGE
+            voltype STRING V
+            anglenr INT 5
+        RHI STRUCT 4
+            type STRING PSEUDORHI_IMAGE
+            voltype STRING V
+            angle FLOAT 90.
+            AziTol FLOAT 0.5
+
+
+# ============================================================================
+#               Save data
+# ============================================================================
+# Save all data in the CFRadial or Odissey HDF5 format
+SAVEVOL STRUCT 3
+    type STRING NCVOL
+    datatype STRARR 1
+        ODIM:dBZ,D{%Y%m%d????00}-F{%Y%m%d%H%M00} # Arbitrary moment
+    products STRUCT 1
+        NC STRUCT 2
+            type  STRING SAVEALL
+            file_type STRING nc
+        H5 STRUCT 2
+            type  STRING SAVEALL
+            file_type STRING h5
