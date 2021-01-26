@@ -2093,6 +2093,9 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                                     cfg['RadarName'][ind_rad]+dayinfo)
                         datapath = (cfg['datapath'][ind_rad]+dayinfo+'/' +
                                     basename+'/')
+                    if not os.path.isdir(datapath):
+                        warn("WARNING: Unknown datapath '%s'" % datapath)
+                        continue
                 elif cfg['path_convention'] == 'ODIM':
                     try:
                         fpath_strf = dataset[
@@ -2103,7 +2106,7 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                     daydir = (
                         starttime+datetime.timedelta(days=i)).strftime(
                             fpath_strf)
-                    datapath = (cfg['datapath'][ind_rad] + daydir+'/')
+                    datapath = (cfg['datapath'][ind_rad]+daydir+'/')
                     dayfilelist = glob.glob(datapath+'*'+scan+'*')
                 else:
                     dayinfo = (starttime+datetime.timedelta(days=i)).strftime(
@@ -2124,10 +2127,10 @@ def get_file_list(datadescriptor, starttimes, endtimes, cfg, scan=None):
                             cfg['datapath'][ind_rad]+'P' +
                             cfg['RadarRes'][ind_rad] +
                             cfg['RadarName'][ind_rad]+'/')
+                    if not os.path.isdir(datapath):
+                        warn("WARNING: Unknown datapath '%s'" % datapath)
+                        continue
 
-                if not os.path.isdir(datapath):
-                    warn("WARNING: Unknown datapath '%s'" % datapath)
-                    continue
                 for filename in dayfilelist:
                     t_filelist.append(filename)
             elif datagroup in ('CFRADIAL', 'ODIMPYRAD', 'PYRADGRID',
