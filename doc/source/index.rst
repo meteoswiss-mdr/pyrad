@@ -1,15 +1,28 @@
-====================
-Pyrad documentation
-====================
+.. pyrad documentation master file, created by
+   sphinx-quickstart on Tue Oct 18 12:04:20 2016.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
 
-Welcome, this is the documentation for the Python Radar Data Processing library of MeteoSwiss
+Welcome to pyrad's documentation!
+=================================
 
-Latest Release
-==============
+Contents:
 
 .. toctree::
-    :maxdepth: 1
+   :maxdepth: 2
+   
+   flow
+   proc
+   prod
+   io
+   graph
+   util
 
-    user_reference/index
-    dev_reference/index
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
 

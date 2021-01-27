@@ -16,11 +16,11 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-
+import glob
 import os
 import sys
-#sys.path.insert(0, os.path.abspath('../../'))
-
+#sys.path.insert(0, os.path.abspath('../../../../src/pyart/pyart/'))
+PYRAD_RELATIVE_PATH = '../../src/pyrad_proc/'
 #import pyart
 
 # -- General configuration ------------------------------------------------
@@ -46,8 +46,15 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages'
 ]
-autosummary_generate = True
-autosummary_imported_members = True
+autodoc_mock_imports = ['pyart','pyproj','numpy','scipy','matplotlib','netCDF4']
+
+# Get all cython files and mock them
+cytfiles = list(glob.iglob(PYART_RELATIVE_PATH + '**/**/*.pyx'))
+libtomock = [f.replace('/','.').replace('..','').replace('.pyx','') for f in cytfiles]
+from unittest import mock
+for mod_name in libtomock:
+    sys.modules[mod_name] = mock.MagicMock()
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -137,8 +144,6 @@ todo_include_todos = True
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
-html_theme_options = {'navigation_depth':5, 'collapse_navigation':False}
-
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
