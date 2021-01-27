@@ -1,3 +1,4 @@
 numpydoc
+pandas
 cython
 ./src/pyrad_proc/
