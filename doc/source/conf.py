@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# pyart-mch documentation build configuration file, created by
+# pyrad-mch documentation build configuration file, created by
 # sphinx-quickstart on Wed Oct 19 06:11:15 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -72,7 +72,7 @@ source_encoding = 'utf-8-sig'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pyart-mch'
+project = u'pyrad-mch'
 copyright = u'2020, meteoswiss-mdr'
 author = u'meteoswiss-mdr'
 
@@ -157,7 +157,7 @@ html_theme = 'sphinxdoc'
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
 #
-# html_title = 'pyart-mch v0.0.1'
+# html_title = 'pyrad-mch v0.0.1'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #
@@ -257,7 +257,7 @@ html_search_language = 'en'
 # html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pyart-mchdoc'
+htmlhelp_basename = 'pyrad-mchdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -283,7 +283,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'pyart-mch_library_reference_users.tex', 'pyart-mch library reference for users',
+    (master_doc, 'pyrad-mch_library_reference_users.tex', 'pyrad-mch library reference for users',
      'meteoswiss-mdr', 'manual'),
 ]
 
@@ -325,7 +325,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'pyart-mch', 'pyart-mch Documentation',
+    (master_doc, 'pyrad-mch', 'pyrad-mch Documentation',
      [author], 1)
 ]
 
@@ -340,8 +340,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'pyart-mch', 'pyart-mch Documentation',
-     author, 'pyart-mch', 'One line description of project.',
+    (master_doc, 'pyrad-mch', 'pyrad-mch Documentation',
+     author, 'pyrad-mch', 'One line description of project.',
      'Miscellaneous'),
 ]
 
