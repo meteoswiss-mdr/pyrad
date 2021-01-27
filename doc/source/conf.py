@@ -49,7 +49,7 @@ extensions = [
 autodoc_mock_imports = ['pyart','pyproj','numpy','scipy','matplotlib','netCDF4']
 
 # Get all cython files and mock them
-cytfiles = list(glob.iglob(PYART_RELATIVE_PATH + '**/**/*.pyx'))
+cytfiles = list(glob.iglob(PYRAD_RELATIVE_PATH + '**/**/*.pyx'))
 libtomock = [f.replace('/','.').replace('..','').replace('.pyx','') for f in cytfiles]
 from unittest import mock
 for mod_name in libtomock:
