@@ -26,6 +26,7 @@ Plots
     plot_bscope
     plot_fixed_rng
     plot_fixed_rng_span
+    plot_fixed_rng_sun
     plot_time_range
     plot_rhi_profile
     plot_along_coord
