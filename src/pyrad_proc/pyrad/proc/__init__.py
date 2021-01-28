@@ -58,6 +58,7 @@ Spectral data functions
     process_spectral_differential_reflectivity
     process_spectral_differential_phase
     process_spectral_rhohv
+    process_sunscan
     process_pol_variables
     process_noise_power
     process_reflectivity
@@ -307,6 +308,7 @@ from .process_calib import process_correct_bias, process_correct_noise_rhohv
 from .process_calib import process_occurrence, process_occurrence_period
 from .process_calib import process_gc_monitoring, process_sun_hits
 from .process_calib import process_time_avg_std
+from .process_calib import process_sunscan
 
 from .process_intercomp import process_time_avg, process_weighted_time_avg
 from .process_intercomp import process_time_avg_flag, process_time_stats
