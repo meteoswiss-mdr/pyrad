@@ -97,6 +97,7 @@ Echo classification and filtering
     process_echo_id
     process_birds_id
     process_clt_to_echo_id
+    process_hydro_mf_to_hydro
     process_echo_filter
     process_cdf
     process_filter_snr
@@ -230,6 +231,7 @@ COSMO data
     process_hzt
     process_hzt_lookup_table
     process_hzt_coord
+    process_iso0_mf
     process_cosmo_to_radar
 
 
@@ -292,6 +294,7 @@ from .process_echoclass import process_filter_snr, process_filter_visibility
 from .process_echoclass import process_outlier_filter, process_hydroclass
 from .process_echoclass import process_cdf, process_melting_layer
 from .process_echoclass import process_filter_vel_diff, process_zdr_column
+from .process_echoclass import process_hydro_mf_to_hydro
 
 from .process_phase import process_correct_phidp0
 from .process_phase import process_smooth_phidp_single_window
@@ -335,7 +338,7 @@ from .process_Doppler import process_dealias_unwrap_phase
 from .process_Doppler import process_vad, process_turbulence
 
 from .process_cosmo import process_cosmo, process_cosmo_lookup_table
-from .process_cosmo import process_cosmo_coord, process_hzt
+from .process_cosmo import process_cosmo_coord, process_hzt, process_iso0_mf
 from .process_cosmo import process_hzt_lookup_table, process_hzt_coord
 from .process_cosmo import process_cosmo_to_radar
 

@@ -10,6 +10,15 @@ RadarRes STRING	L
 # Names of the radar scans
 ScanList STRARR 1
       ODIM_VOL_HR_MTCY_  # masterscan: first scan of a volume
+	  
+# Repetition time of the scans [min]
+ScanPeriod INT 5
+
+# Frequency of cosmo run [h]
+CosmoRunFreq INT 12
+
+# hours forecasted in cosmo run [h]
+CosmoForecasted INT 24
 
 # Image config
 ppiImageConfig STRUCT 6

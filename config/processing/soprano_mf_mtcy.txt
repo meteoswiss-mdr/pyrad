@@ -14,6 +14,9 @@ name STRING MF
 datapath STRING /utemp/mdso/figuerasiventuraj/SERVAL/serval_data_test/DATA_OUT/produits_binaires/
 path_convention STRING ODIM
 
+# NWP path
+cosmopath STRING /utemp/mdso/figuerasiventuraj/SERVAL/serval_data_test/DATA_IN/reception_tempe/
+
 # Loading of saved datasets
 loadbasepath STRING STRING /utemp/mdso/figuerasiventuraj/pyrad_products/
 loadname STRING MF

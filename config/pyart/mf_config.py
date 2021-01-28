@@ -309,6 +309,7 @@ melting_layer_height = 'melting_layer_height'
 
 # hydroclass
 radar_echo_classification = 'radar_echo_classification'
+radar_echo_classification_MF = 'radar_echo_classification_MF'
 corrected_radar_echo_classification = 'corrected_radar_echo_classification'
 hydroclass_entropy = 'hydroclass_entropy'
 proportion_AG = 'proportion_AG'
@@ -654,6 +655,7 @@ DEFAULT_FIELD_NAMES = {
     'rainfall_accumulation': rainfall_accumulation,
     'radar_echo_classification': radar_echo_classification,
     'corrected_radar_echo_classification': corrected_radar_echo_classification,
+    'radar_echo_classification_MF': radar_echo_classification_MF,
     'hydroclass_entropy': hydroclass_entropy,
     'proportion_AG': proportion_AG,
     'proportion_CR': proportion_CR,
@@ -2323,10 +2325,10 @@ DEFAULT_METADATA = {
 
     # NO DATA (int)255
     
-    radar_echo_classification: {
+    radar_echo_classification_MF: {
         'units': '-',
-        'standard_name': 'radar_echo_classification',
-        'long_name': 'Radar echo classification',
+        'standard_name': 'radar_echo_classification_MF',
+        'long_name': 'MF Radar echo classification',
         'labels': [
             'ZH_MQT', 'SOL', 'INSECTES', 'OISEAUX', 'MER_CHAFF',
             'PARASITES', 'ROND_CENTRAL', 'PRECIP_INDIFFERENCIEE', 'PLUIE',
@@ -2343,24 +2345,32 @@ DEFAULT_METADATA = {
         '_FillValue': 0,  # BRUIT
         '_Write_as_dtype': 'uint8'},
 
+    radar_echo_classification: {
+        'units': '-',
+        'standard_name': 'radar_echo_classification',
+        'long_name': 'Radar echo classification',
+        'labels': ['NC', 'AG', 'CR', 'LR', 'RP', 'RN', 'VI', 'WS', 'MH',
+                   'IH/HDG'],
+        'ticks': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        'boundaries': [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5],
+        'coordinates': 'elevation azimuth range',
+        'scale_factor': 1,
+        'add_offset': 0,
+        '_FillValue': 0,
+        '_Write_as_dtype': 'uint8'},
+
     corrected_radar_echo_classification: {
         'units': '-',
         'standard_name': 'corrected_radar_echo_classification',
         'long_name': 'Radar echo classification',
-        'labels': [
-            'ZH_MQT', 'SOL', 'INSECTES', 'OISEAUX', 'MER_CHAFF',
-            'PARASITES', 'ROND_CENTRAL', 'PRECIP_INDIFFERENCIEE', 'PLUIE',
-            'NEIGE_MOUILLEE', 'NEIGE_SECHE', 'GLACE', 'PETITE_GRELE',
-            'MOYENNE_GRELE', 'GROSSE_GRELE'],
-        'ticks': [
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-        'boundaries': [
-            0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5,
-            13.5, 14.5, 15.5],
+        'labels': ['NC', 'AG', 'CR', 'LR', 'RP', 'RN', 'VI', 'WS', 'MH',
+                   'IH/HDG'],
+        'ticks': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        'boundaries': [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5],
         'coordinates': 'elevation azimuth range',
         'scale_factor': 1,
         'add_offset': 0,
-        '_FillValue': 0,  # BRUIT
+        '_FillValue': 0,
         '_Write_as_dtype': 'uint8'},
 
     hydroclass_entropy: {
@@ -3722,6 +3732,7 @@ DEFAULT_FIELD_COLORMAP = {
 
     radar_echo_classification: 'pyart_LangRainbow12',
     corrected_radar_echo_classification: 'pyart_LangRainbow12',
+    radar_echo_classification_MF: 'pyart_LangRainbow12',
     hydroclass_entropy: 'pyart_LangRainbow12',
     proportion_AG:  'pyart_LangRainbow12',
     proportion_CR:  'pyart_LangRainbow12',
