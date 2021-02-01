@@ -81,9 +81,11 @@ def get_process_func(dataset_type, dsname):
                 'FIXED_RNG': process_fixed_rng
                 'FIXED_RNG_SPAN': process_fixed_rng_span
                 'GECSX' : process_gecsx
+                'hydroMF_to_hydro': process_hydro_mf_to_hydro
                 'HYDROCLASS': process_hydroclass
                 'HZT': process_hzt
                 'HZT_LOOKUP': process_hzt_lookup_table
+                'ISO0_MF': process_iso0_mf
                 'KDP_LEASTSQUARE_1W': process_kdp_leastsquare_single_window
                 'KDP_LEASTSQUARE_2W': process_kdp_leastsquare_double_window
                 'L': process_l
@@ -363,6 +365,8 @@ def get_process_func(dataset_type, dsname):
         func_name = 'process_birds_id'
     elif dataset_type == 'CLT_TO_SAN':
         func_name = 'process_clt_to_echo_id'
+    elif dataset_type == 'hydroMF_to_hydro':
+        func_name = 'process_hydro_mf_to_hydro'
     elif dataset_type == 'ECHO_FILTER':
         func_name = 'process_echo_filter'
     elif dataset_type == 'ZDR_COLUMN':
@@ -491,6 +495,8 @@ def get_process_func(dataset_type, dsname):
         dsformat = 'COSMO2RADAR'
     elif dataset_type == 'HZT':
         func_name = 'process_hzt'
+    elif dataset_type == 'ISO0_MF':
+        func_name = 'process_iso0_mf'
     elif dataset_type == 'HZT_LOOKUP':
         func_name = 'process_hzt_lookup_table'
     elif dataset_type == 'DEM':
