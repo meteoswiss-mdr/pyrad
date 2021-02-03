@@ -9,6 +9,8 @@
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyrad_mch/badges/platforms.svg)](https://anaconda.org/conda-forge/pyrad_mch)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyrad_mch/badges/license.svg)](https://anaconda.org/conda-forge/pyrad_mch)
 
+> :warning: **Please use the [new repository](https://github.com/MeteoSwiss/pyrad). This repository is not maintained anymore!**
+
 # pyrad
 Python Radar Data Processing
 
